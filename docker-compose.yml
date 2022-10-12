@@ -1,0 +1,13 @@
+services:
+    ir_notebook:
+        image: jupyter-ir
+        build:
+            dockerfile: ./Dockerfile
+            context: .
+        user: jovyan
+        container_name: ir_project
+        ports:
+          - "8889:8888"
+        volumes:
+          - ./src:/home/jovyan/work
+     
