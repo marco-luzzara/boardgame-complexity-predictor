@@ -11,4 +11,6 @@ services:
         volumes:
           - ./src:/home/jovyan/work
           - ./data:/home/jovyan/work/data
+        env_file:
+          - ./bgg.env
      

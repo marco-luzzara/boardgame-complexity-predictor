@@ -1,3 +1,5 @@
 resources/
 src/.ipynb_checkpoints/
 data/
+bgg.env
+
