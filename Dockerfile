@@ -15,3 +15,5 @@ RUN <<EOF
 pip install --user -U nltk
 pip install --user -U numpy
 EOF
+
+RUN python -m pip install --upgrade pymupdf
