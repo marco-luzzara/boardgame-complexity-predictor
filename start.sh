@@ -1,4 +1,7 @@
 #!/bin/bash
+# make sure to have a bgg.env file containing the following variables:
+# BGGUSERNAME
+# BGGPASSWORD
 
 docker-compose up -d 
 
