@@ -5,9 +5,9 @@ RUN pip install aiohttp
 
 # spacy
 RUN <<EOF
-pip install -U setuptools wheel
-pip install -U spacy
-python -m spacy download en_core_web_sm
+	pip install -U setuptools wheel
+	pip install -U spacy
+	python -m spacy download en_core_web_sm
 EOF
 
 # nltk
@@ -17,3 +17,4 @@ pip install --user -U numpy
 EOF
 
 RUN python -m pip install --upgrade pymupdf
+RUN pip install fastcoref

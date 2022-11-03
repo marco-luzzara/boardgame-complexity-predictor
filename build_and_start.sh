@@ -1,6 +1,6 @@
 #!/bin/bash -e
 old_image_id=$(docker images -q jupyter-ir)
-docker container rm  ir_project
+docker ps -a | grep ir_project && docker container rm ir_project
 
 COMPOSE_DOCKER_CLI_BUILD=1 \
 DOCKER_BUILDKIT=1 \
