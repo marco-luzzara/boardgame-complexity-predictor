@@ -18,3 +18,4 @@ EOF
 
 RUN python -m pip install --upgrade pymupdf==1.20.*
 RUN pip install fastcoref==2.0.*
+RUN pip install dataclass-csv==1.4.*
