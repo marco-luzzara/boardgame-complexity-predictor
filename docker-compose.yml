@@ -13,4 +13,10 @@ services:
           - ./data:/home/jovyan/work/data
         env_file:
           - ./bgg.env
+          - ./resources_limits.env
+        deploy:
+	    	resources:
+        		limits:
+				  	cpus: "${CPUS}"
+				 	memory: ${MEMORY}
      

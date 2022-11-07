@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 import xml.etree.ElementTree as xe
 
 @dataclass
@@ -159,5 +159,9 @@ if __name__ == '__main__':
 </ratings>
 </statistics>
 </item>''')
-    b = BoardGameInfo.from_item(item)
-    print(b)
+    bg_info = BoardGameInfo.from_item(item)
+    bg = BoardGame(bg_info, 'test')
+    bg_dict = asdict(bg)
+    import pandas as pd
+    df = pd.json_normalize([bg_dict])
+    print(df)
