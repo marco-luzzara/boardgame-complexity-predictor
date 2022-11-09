@@ -3,7 +3,7 @@
 # BGGUSERNAME
 # BGGPASSWORD
 
-docker-compose up -d 
+docker-compose --env-file ./resources_limits.env up -d 
 
 sleep 5
 

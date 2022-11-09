@@ -13,10 +13,11 @@ services:
           - ./data:/home/jovyan/work/data
         env_file:
           - ./bgg.env
-          - ./resources_limits.env
+        environment:
+          - WORKING_LOCALLY=true
         deploy:
-	    	resources:
-        		limits:
-				  	cpus: "${CPUS}"
-				 	memory: ${MEMORY}
+            resources:
+                limits:
+                    cpus: "${CPUS}"
+                    memory: ${MEMORY}
      
