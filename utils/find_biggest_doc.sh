@@ -19,4 +19,4 @@ do
 	fi
 done
 
-echo "Biggest len: ${biggest_len}\nBiggest doc_ ${biggest_doc}"
+printf "Biggest len: ${biggest_len}\nBiggest doc: ${biggest_doc}\n"

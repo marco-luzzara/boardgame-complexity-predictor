@@ -17,7 +17,6 @@ RUN <<EOF
 EOF
 
 RUN python -m pip install --upgrade pymupdf==1.20.*
-RUN pip install fastcoref==2.0.*
 
 # coreferee
 RUN <<EOF
@@ -28,4 +27,4 @@ RUN <<EOF
 	python -m spacy download en_core_web_trf
 EOF
 
-
+RUN pip install lexicalrichness==0.4.*
