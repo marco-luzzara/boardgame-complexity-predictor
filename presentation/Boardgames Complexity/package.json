@@ -1,0 +1,21 @@
+{
+  "name": "boardgames-complexity",
+  "private": true,
+  "scripts": {
+    "build": "slidev build",
+    "dev": "slidev --open",
+    "export": "slidev export"
+  },
+  "dependencies": {
+    "@slidev/cli": "^0.38.4",
+    "@slidev/theme-apple-basic": "^0.20.0",
+    "@slidev/theme-default": "*",
+    "@slidev/theme-seriph": "*",
+    "slidev-theme-academic": "^1.1.1",
+    "slidev-theme-eloc": "^1.0.1"
+  },
+  "devDependencies": {
+    "@iconify-json/ep": "^1.1.8",
+    "@iconify-json/uim": "^1.1.3"
+  }
+}
