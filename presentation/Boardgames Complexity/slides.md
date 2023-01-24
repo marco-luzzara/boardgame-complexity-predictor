@@ -29,6 +29,9 @@ css: unocss
 <br />
 
 Goal
+
+<br />
+
 Analyze a boardgame to predict its complexity, then compare it with the corresponding BoardgameGeek weight
 
 ---
@@ -38,35 +41,28 @@ Analyze a boardgame to predict its complexity, then compare it with the correspo
 <div class="grid grid-rows-1 grid-cols-3 centered-grid">
   <p>
     <b>Complexity</b> <br />
-    <em>Complexity arises when a player follows one base rule, and in doing so changes the way that another base rule affects the game state</em>
+    <em><q>Complexity arises when a player follows one base rule, and in doing so changes the way that another base rule affects the game state</q></em>
   </p>
   <ep-circle-plus-filled class="text-4xl" />
   <p>
     <b>Depth</b> <br />
-    <em>the depth of a game is more of a heuristic based on how many deep decisions are in the design</em>
+    <em><q>The depth of a game is more of a heuristic based on how many deep decisions are in the design</q></em>
   </p>
 </div>
 
+<br />
+<br />
 
-*Source: https://boardgamegeek.com/blogpost/108921/defining-complexity-and-depth-game-design*
-
-<style>
-  .centered-grid {
-    justify-content: center; 
-    align-content: center;
-    grid-auto-flow: column; 
-    align-items: center;
-    justify-items: center;
-  }
-</style>
+### *Source: https://boardgamegeek.com/blogpost/108921/defining-complexity-and-depth-game-design*
 
 ---
 
 # Data Retrieval
 
-<div style="display: flex; justify-content: center; align-items: center;">
-  <img src="https://cf.geekdo-static.com/images/logos/navbar-logo-bgg-b2.svg" style="float: left; margin-right: 5%;" />
-  <div style="float: left">
+<div class="grid grid-cols-6 centered-grid">
+  <img src="https://cf.geekdo-static.com/images/logos/navbar-logo-bgg-b2.svg" />
+  <material-symbols-arrow-forward-ios-rounded class="text-4xl"/>
+  <div class="col-span-4 text-sm">
 
   | Field | Description | How |
   | ----- | ----------- | ---- |
@@ -80,7 +76,7 @@ Analyze a boardgame to predict its complexity, then compare it with the correspo
   </div>
 </div>
 
-*XMLAPI2: https://boardgamegeek.com/wiki/page/BGG_XML_API2*
+### *XMLAPI2: https://boardgamegeek.com/wiki/page/BGG_XML_API2*
 
 ---
 
@@ -107,8 +103,53 @@ How to automate the rulebooks' download? **No public APIs** and often **many doc
   query_vector = vectorizer.transform(["revised official rule rulebook update new"])
   docs_ranked = cosine_similarity(query_vector, doc_vectors)
 
-  # ... Take best doc only
+  # ... Take only the best doc
   ```
+
+---
+
+# Data Cleaning
+
+- The Family field is one-hot encoded 
+
+<div class="grid grid-rows-1 grid-cols-3 centered-grid">
+
+  ```
+  1. ["familygame", "strategy"]
+  2. []
+  3. ["abstract", "strategy"]
+  ```
+
+  <ic-outline-arrow-circle-right class="text-4xl" />
+
+  | familygame | strategy | abstract | unspecified |
+  | ---------- | -------- | -------- | ----------- |
+  | 1 | 1 | 0 | 0 |
+  | 0 | 0 | 0 | 1 |
+  | 0 | 1 | 1 | 0 |
+
+</div>
+
+---
+
+# Rulebook Cleaning
+
+  1. By regular expressions to:
+      * Remove mails and links
+      * Keep sentences longer than 4 words, where each word has at least 2 chars
+      * Clearly separate sentences (e.g. "*first sentence.Second one*" <material-symbols-arrow-right-alt-rounded /> "*first sentence. Second one*")
+      * Compress consecutive whitespaces
+      * Join interrupted word parts (e.g. "*Infor- mation*" <material-symbols-arrow-right-alt-rounded /> "*Information*")
+      * Remove characters around numbers (e.g. *"-----12-----"* could be a page number)
+      * Recover missing apices (e.g. "*can t*" <material-symbols-arrow-right-alt-rounded /> "*can't*")
+      * ...
+  1. By Coreference Resolution (with `coreferee`)
+      <div class="grid grid-rows-1 grid-cols-3 centered-grid">
+
+        *Although <span class="text-red-600">he</span> was very busy with <span class="text-red-600">his</span> <span class="text-green-600">work</span>, <span class="text-red-600">Peter</span> had had enough of <span class="text-green-600">it</span>.*
+        <ic-outline-arrow-circle-right class="text-4xl" />
+        *Although <span class="text-red-600">Peter</span> was very busy with <span class="text-red-600">Peter</span> <span class="text-green-600">work</span>, <span class="text-red-600">Peter</span> had had enough of <span class="text-green-600">work</span>.*
+      </div>
 
 ---
 
@@ -135,8 +176,7 @@ How to automate the rulebooks' download? **No public APIs** and often **many doc
 - Amount of bookkeeping ❌
 - Level of difficulty ❓
 
-*Source: https://boardgamegeek.com/wiki/page/Weight*
-
+### *Source: https://boardgamegeek.com/wiki/page/Weight*
 
 <style>
   .barContainer { width: 90%; margin-left: 5%; float: left; }
@@ -154,88 +194,301 @@ How to automate the rulebooks' download? **No public APIs** and often **many doc
 </style>
 
 ---
+clicks: 3
+---
 
-# Collecting BGG Data
+# Amount of Luck
 
-- From 
+Main sources of luck:
 
-dsd
+<div v-if="$slidev.nav.clicks === 1">
 
-Use code snippets and get the highlighting directly![^1]
+  - Shuffling a deck, or when *"random/randomly"* words are used
 
-```ts {all|2|1-6|9|all}
-interface User {
-  id: number
-  firstName: string
-  lastName: string
-  role: string
-}
+    ```python
+    # ---------- random ----------
+    random_matcher = Matcher(doc.vocab)
+    random_patterns_match = [
+        [{"LEMMA": { "IN": ["random", "randomly"]}}]
+    ]
+    random_matcher.add("random", random_patterns_match)
 
-function updateUser(id: number, update: User) {
-  const user = getUser(id)
-  const newUser = { ...user, ...update }
-  saveUser(id, newUser)
+    # ---------- shuffle ----------
+    shuffle_matcher = Matcher(doc.vocab)
+    shuffle_patterns_match = [
+        [{"LEMMA": "shuffle"}]
+    ]
+    shuffle_matcher.add("shuffle", shuffle_patterns_match)
+    ```
+</div>
+
+<div v-if="$slidev.nav.clicks === 2">
+
+  - Drawing a card
+    ```python
+    g_matcher = DependencyMatcher(doc.vocab)    
+    drawing_patterns = [
+        [
+            {
+                "RIGHT_ID": "drawing",
+                "RIGHT_ATTRS": {"LEMMA": "draw", "POS": "VERB"}
+            },
+            {
+                "LEFT_ID": "drawing",
+                "REL_OP": ">",
+                "RIGHT_ID": "card",
+                "RIGHT_ATTRS": {
+                    "LEMMA": "card",
+                    "POS": "NOUN", 
+                    "DEP": { "IN": ['dobj', 'nsubjpass', 'compound'] }
+                }
+            }
+        ]
+    ]
+    ```
+</div>
+
+<div v-if="$slidev.nav.clicks === 3">
+
+  - Rolling a die
+    ```python (all|2|1-6|9|all)
+    dice_matcher = DependencyMatcher(doc.vocab)    
+    dice_patterns = [
+        [
+            {
+                "RIGHT_ID": "rolling",
+                "RIGHT_ATTRS": {"LEMMA": { "IN": ["use", "throw", "roll"]}, "POS": "VERB"}
+            },
+            {
+                "LEFT_ID": "rolling",
+                "REL_OP": ">",
+                "RIGHT_ID": "dice_or_die",
+                "RIGHT_ATTRS": {
+                    "LEMMA": { "IN": ["die", "dice"]},
+                    "POS": "NOUN", 
+                    "DEP": { "IN": ['nsubj', 'dobj', 'nsubjpass', 'compound'] }
+                }
+            }
+        ],
+        [
+            {
+                "RIGHT_ID": "rolling",
+                "RIGHT_ATTRS": {"LEMMA": { "IN": ["use", "throw", "roll"]}, "POS": "VERB"}
+            },
+            {
+                "LEFT_ID": "rolling",
+                "REL_OP": ">",
+                "RIGHT_ID": "number",
+                "RIGHT_ATTRS": {
+                    "IS_DIGIT": True, 
+                    "DEP": { "IN": ['dobj'] }
+                }
+            }
+        ]
+    ]
+    dice_matcher.add("diceroll", dice_patterns)
+    ```
+</div>
+
+---
+clicks: 4
+---
+
+# Technical skill required (math, planning, reading)
+
+<v-clicks>
+
+- Math ❌
+- Planning ❌
+- Reading ✅
+
+</v-clicks>
+
+<br />
+<div v-click="3"> 
+  
+  **MTLD** (Measure of Textual Lexical Diversity)
+</div>
+
+<div v-click="4"> 
+
+  - Mostly independent from text length
+  - Highly sensitive
+  - Based on TTR (Type-Token ratio)
+</div>
+
+---
+clicks: 10
+---
+
+# Amount of choices available
+
+<div v-if="$slidev.nav.clicks >= 0 && $slidev.nav.clicks <= 4">
+
+Modal verbs like *can/could/may/select/choose* or nouns like *choice/option*
+
+```python {0|1-6|8-13|15-20}
+can_could_may_patterns = [
+    [{
+        "LEMMA": { "IN": ["can", "could", "may"]}, 
+        "POS": "AUX"
+    }]
+]
+# ...
+choose_patterns = [
+    [{
+        "LEMMA": { "IN": ["decide", "select", "choose", "opt"]}, 
+        "POS": "VERB"
+    }]
+]
+# ...
+choice_option_patterns = [
+    [{
+        "LEMMA": { "IN": ["choice", "option"]}, 
+        "POS": "NOUN"
+    }]
+]
+```
+</div>
+
+<div v-if="$slidev.nav.clicks === 5">
+
+It is not always true...
+
+- cannot + verb <material-symbols-arrow-right-alt-rounded /> Impossibility to do something
+- can + choose to + verb <material-symbols-arrow-right-alt-rounded /> Should be counted as 1 choice
+- no + choice <material-symbols-arrow-right-alt-rounded /> No actual choice
+- ...
+
+</div>
+
+<div v-if="$slidev.nav.clicks >= 6">
+
+Subtract the tokens found for these exceptions from the initial ones, for example
+
+```python {|||||||1|2|all}
+# ❌ can not/only/never verb 
+{
+    "RIGHT_ID": "can_could_may",
+    "RIGHT_ATTRS": {
+        "LEMMA": { "IN": ["can", "could", "may"]}, 
+        "POS": "AUX"
+    }
+},
+{
+    "LEFT_ID": "can_could_may",
+    "REL_OP": "<",
+    "RIGHT_ID": "generic_verb",
+    "RIGHT_ATTRS": {
+        "POS": { "IN": ["AUX", "VERB"] }
+    }
+},
+{
+    "LEFT_ID": "generic_verb",
+    "REL_OP": ">",
+    "RIGHT_ID": "neg_or_only",
+    "RIGHT_ATTRS": {
+        "LEMMA": { "IN": ["not", "only", "never"]}, 
+        "DEP": { "IN": ["advmod", "neg"] }
+    }
 }
 ```
 
-<arrow v-click="3" x1="400" y1="420" x2="230" y2="330" color="#564" width="3" arrowSize="1" />
-
-[^1]: [Learn More](https://sli.dev/guide/syntax.html#line-highlighting)
-
-<style>
-.footnotes-sep {
-  @apply mt-20 opacity-10;
-}
-.footnotes {
-  @apply text-sm opacity-75;
-}
-.footnote-backref {
-  display: none;
-}
-</style>
+</div>
 
 ---
 
-# Components
+# Entities
 
-<div grid="~ cols-2 gap-4">
+<v-clicks>
+
+Boardgame complexity ∝ Entities
+
+Entity = *Any necessary noun that makes a rule meaningful*
+
+<div>
+According to this definition, an entity can be:
+
+- The game materials
+- A phase of the game
+- A resource type, like in a Eurogame
+</div>
+
+</v-clicks>
+
+---
+
+# How to Find Entities?
+
+<v-clicks>
+
 <div>
 
-You can use Vue components directly inside your slides.
-
-We have provided a few built-in components like `<Tweet/>` and `<Youtube/>` that you can use directly. And adding your custom components is also super easy.
-
-```html
-<Counter :count="10" />
-```
-
-<!-- ./components/Counter.vue -->
-<Counter :count="10" m="t-4" />
-
-Check out [the guides](https://sli.dev/builtin/components.html) for more.
-
+- Keyword Extraction? ❌
+  * Too many "garbage" words
 </div>
 <div>
 
-```html
-<Tweet id="1390115482657726468" />
+- `Spacy` Named Entities? ❌
+  * Good for real-world object, not for this type of entity
+</div>
+<div>
+
+- `Spacy` Linguistic Features ✅
+  * Part-of-Speech
+  * Dependency Tree
+</div>
+
+</v-clicks>
+
+---
+clicks: 5
+---
+
+# Entity Retrieval with `Spacy`
+
+<div v-if="$slidev.nav.clicks >= 0 && $slidev.nav.clicks <= 4">
+
+- Create a dictionary of filtered nouns
+
+```python {5|6|7|all}
+def find_most_common_nouns(doc: spacy.tokens.Doc) -> Dict[str, List[spacy.tokens.Token]]:
+    tokens_dict = defaultdict(list)
+
+    for token in doc:
+        if len(token) >= 3 and \
+            token.pos_ in {'NOUN', 'PROPN'} and \
+            token.dep_ in {'nsubj', 'dobj', 'nsubjpass', 'pobj'}:
+            tokens_dict[token.lemma_.lower()].append(token)
+           
+    return tokens_dict
+```    
+
+</div>
+
+<div v-if="$slidev.nav.clicks === 5">
+
+- Keep only the nouns that satisfy the following conditions
+
+```python
+def _is_token_an_unigram(token_info: Tuple[str, List[spacy.tokens.Token]]) -> bool:
+    token = token_info[0]
+    occurrences = token_info[1]
+    sentence_ids = sorted([occ._.sentence_id for occ in occurrences])
+    return token not in IGNORED_WORDS and \
+            len(occurrences) >= MIN_TOKEN_TO_BE_CONSIDERED_UNIGRAM and \
+            any(token_occurrence.dep_ in {'nsubj', 'nsubjpass', 'dobj'} \
+                for token_occurrence in occurrences) and \
+            min( # get the minimum distance between sentence ids. A token must not be completely sparse 
+                map(lambda x: x[1] - x[0], zip(sentence_ids[:-1], sentence_ids[1:]))
+            ) <= MAX_DISTANCE_TO_BE_CONSIDERED_UNIGRAM
 ```
 
-<Tweet id="1390115482657726468" scale="0.65" />
-
-</div>
 </div>
 
-<!--
-Presenter note with **bold**, *italic*, and ~~striked~~ text.
+---
 
-Also, HTML elements are valid:
-<div class="flex w-full">
-  <span style="flex-grow: 1;">Left content</span>
-  <span>Right content</span>
-</div>
--->
-
+# Entity-based Scores
 
 ---
 class: px-20
