@@ -1,7 +1,7 @@
 .centered-grid {
     justify-content: center;
     align-content: center;
-    grid-auto-flow: column;
+    /* grid-auto-flow: column; */
     align-items: center;
     justify-items: center;
 }

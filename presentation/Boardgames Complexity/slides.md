@@ -488,7 +488,164 @@ def _is_token_an_unigram(token_info: Tuple[str, List[spacy.tokens.Token]]) -> bo
 
 ---
 
-# Entity-based Scores
+# Entity-based Metrics
+
+<v-clicks>
+
+- Entity count
+- Actions score
+- Interactions score
+- Entities variance
+
+</v-clicks>
+
+---
+
+# Actions Score
+
+**How many ways can we interact with an entity?**
+
+```python {3,4|9|all}
+def find_actions_count_for_unigrams(doc: spacy.tokens.Doc, 
+                                    unigrams: Dict[str, List[spacy.tokens.Token]]) -> Dict[str, int]:
+    return { unigram: len(set(token.head.lemma_ for token in unigrams[unigram] if token.head.pos_ == 'VERB'))
+        for unigram in unigrams }
+
+def get_actions_score(doc: spacy.tokens.Doc, 
+                      unigrams: Dict[str, List[spacy.tokens.Token]]) -> float:
+    actions_counts = find_actions_count_for_unigrams(doc, unigrams)
+    return sum(unigram_action_count[1] for unigram_action_count in actions_counts.items()) / len(unigrams)
+```
+
+---
+
+# Interactions Score
+
+**How complex is an entity?**
+
+Where *complex* refers to the initial definition of complexity
+
+<div class="grid grid-cols-2">
+<v-click>
+  <div id="interactions-grid" class="grid grid-cols-5">
+
+  <div class="bordercell"></div>
+  <div class="bordercell">e1</div>
+  <div class="bordercell">e2</div>
+  <div class="bordercell">e3</div>
+  <div class="bordercell">e4</div>
+
+  <div class="bordercell">e1</div>
+  <OpaqueGridCell value="0" />
+  <OpaqueGridCell value="10" />
+  <OpaqueGridCell value="6" />
+  <OpaqueGridCell value="3" />
+
+  <div class="bordercell">e2</div>
+  <OpaqueGridCell value="0" />
+  <OpaqueGridCell value="0" />
+  <OpaqueGridCell value="6" />
+  <OpaqueGridCell value="0" />
+
+  <div class="bordercell">e3</div>
+  <OpaqueGridCell value="0" />
+  <OpaqueGridCell value="0" />
+  <OpaqueGridCell value="0" />
+  <OpaqueGridCell value="6" />
+
+  <div class="bordercell">e4</div>
+  <OpaqueGridCell value="0" />
+  <OpaqueGridCell value="0" />
+  <OpaqueGridCell value="0" />
+  <OpaqueGridCell value="0" />
+
+  </div>
+</v-click>
+
+<v-click>
+  <div>
+  The Interactions score is the density of the sparse graph represented by the matrix
+  <br />
+  <br />
+
+  <div style="width: 100%; justify-content: center; display: flex">
+
+  $η = \frac{2|E|}{|V|(|V|−1)}$
+  </div>
+  </div>
+</v-click>
+</div>
+
+<style>
+  #interactions-grid {
+    width: 90%;
+    .bordercell {
+      text-align: center;
+      padding: 20%;
+      border: 1px solid grey;
+    }
+  }
+
+  .katex {
+    font-size: 2em;
+  }
+</style>
+
+---
+
+# Entities Variance
+
+**How scattered are the entities in the text?**
+
+<br />
+<br />
+<v-click>
+
+  <div style="width: 100%; justify-content: center; display: flex">
+
+  $\frac{\sum_{i = 0}^{len(entities)} \frac{len(entity_i)}{len(all\ entities)} * np.var([entity.sentence\_id\ for\ entity\ in\ entities_i])}{len(sentences)}$
+  </div>
+
+</v-click>
+
+<style>
+  .katex {
+    font-size: 2em;
+  }
+</style>
+
+---
+
+# Model Training
+
+<v-clicks>
+
+- **Preprocessing**: `RobustScaler` usually gives the best results, but `StandardScaler` and `MinMaxScaler` are good as well
+- **Feature Selection**: `RFECV` for coefficient-based models, `SelectKBest` for the others
+- **Best Model**: `SVR`
+- **MAE** ≈ `0.30`
+- **Learning Curve**: stable after a dataset of 150 boardgames
+- **KBest Features**: between 6 and 13, depending on the model. 7 for `SVR`
+
+</v-clicks>
+
+---
+
+# Best Features
+
+For `SVR`, on 5 trainings with different train-test splits, the chosen features are:
+
+`['playingtime', 'rulebook_len', 'entities_count', 'interaction_score', 'entities_variance', 'actions_score', 'familygames', 'strategygames']`
+
+<br />
+<br />
+
+<v-click>
+<div>
+<fa-exclamation-triangle style="color: yellow"/> 
+The metrics computed specifically for the BGG Weight are not relevant 
+</div>
+</v-click>
 
 ---
 class: px-20
