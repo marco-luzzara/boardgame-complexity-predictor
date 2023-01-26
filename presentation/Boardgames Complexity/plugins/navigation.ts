@@ -8,8 +8,11 @@ export default {
         // from https://github.com/slidevjs/slidev/blob/main/packages/client/modules/context.ts
 
         const context = reactive(useContext(route, clicks))
-        context.clicks_in_range = (start, end) =>
-            context.nav.clicks >= start && context.nav.clicks <= end;
+        console.log(context)
+        context.clicks_in_range = (start, end) => {
+            console.log(context.nav.clicks)
+            return context.nav.clicks >= start && context.nav.clicks <= end;
+        }
         app.provide(injectionSlidevContext, context)
     }
 }

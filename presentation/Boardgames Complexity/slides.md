@@ -80,7 +80,7 @@ clicks: 8
 
 How to automate the rulebooks' download? **No public APIs** and often **many documents to choose from**
 
-<div v-if="$slidev.clicks_in_range(0, 4)">
+<div v-if="$slidev.nav.clicks >= 0 && $slidev.nav.clicks <= 4">
 
 - Internal APIs for authenticated users
 
@@ -107,11 +107,11 @@ async def get_file_content(client, auth_token: str, file: BoardGameFileInfo) -> 
 
 </div>
 
-<div v-if="$slidev.clicks_in_range(5, 8)">
+<div v-if="$slidev.nav.clicks >= 5 && $slidev.nav.clicks <= 8">
 
 - Search engine based on Tf-Idf to choose the best document
 
-```python {all|2|4|all}
+```python {|||||all|2|4|all}
 filelist = await get_bgg_filelist(client, thing_id)
 doc_vectors = vectorizer.fit_transform(f'{x.name} {x.plain_description}' for x in filelist)
 
@@ -129,7 +129,7 @@ docs_ranked = cosine_similarity(query_vector, doc_vectors)
 
 - The Family field is one-hot encoded 
 
-<div class="grid grid-rows-1 grid-cols-3 centered-grid">
+<div class="grid grid-rows-1 grid-cols-3 centered-grid" v-click>
 
   ```
   1. ["familygame", "strategy"]
@@ -148,42 +148,66 @@ docs_ranked = cosine_similarity(query_vector, doc_vectors)
 </div>
 
 ---
+clicks: 10
+---
 
 # Rulebook Cleaning
 
-  1. By regular expressions to:
-      * Remove mails and links
-      * Keep sentences longer than 4 words, where each word has at least 2 chars
-      * Clearly separate sentences (e.g. "*first sentence.Second one*" <material-symbols-arrow-right-alt-rounded /> "*first sentence. Second one*")
-      * Compress consecutive whitespaces
-      * Join interrupted word parts (e.g. "*Infor- mation*" <material-symbols-arrow-right-alt-rounded /> "*Information*")
-      * Remove characters around numbers (e.g. *"-----12-----"* could be a page number)
-      * Recover missing apices (e.g. "*can t*" <material-symbols-arrow-right-alt-rounded /> "*can't*")
-      * ...
-  1. By Coreference Resolution (with `coreferee`)
-      <div class="grid grid-rows-1 grid-cols-3 centered-grid">
+<div v-if="$slidev.nav.clicks >= 0 && $slidev.nav.clicks <= 8">
 
-        *Although <span class="text-red-600">he</span> was very busy with <span class="text-red-600">his</span> <span class="text-green-600">work</span>, <span class="text-red-600">Peter</span> had had enough of <span class="text-green-600">it</span>.*
-        <ic-outline-arrow-circle-right class="text-4xl" />
-        *Although <span class="text-red-600">Peter</span> was very busy with <span class="text-red-600">Peter</span> <span class="text-green-600">work</span>, <span class="text-red-600">Peter</span> had had enough of <span class="text-green-600">work</span>.*
-      </div>
+- By regular expressions to:
+
+  <v-clicks>
+
+    - Remove mails and links
+    - Keep sentences longer than 4 words, where each word has at least 2 chars
+    - Clearly separate sentences (e.g. "*first sentence.Second one*" <material-symbols-arrow-right-alt-rounded /> "*first sentence. Second one*")
+    - Compress consecutive whitespaces
+    - Join interrupted word parts (e.g. "*Infor- mation*" <material-symbols-arrow-right-alt-rounded /> "*Information*")
+    - Remove characters around numbers (e.g. *"-----12-----"* could be a page number)
+    - Recover missing apices (e.g. "*can t*" <material-symbols-arrow-right-alt-rounded /> "*can't*")
+    - ...
+  </v-clicks>
+</div>
+
+<div v-if="$slidev.nav.clicks >= 9 && $slidev.nav.clicks <= 10">
+
+- By Coreference Resolution (with `coreferee`)
+  <div class="grid grid-rows-1 grid-cols-3 centered-grid">
+
+    <div v-click="9">
+
+    *Although <span class="text-red-600">he</span> was very busy with <span class="text-red-600">his</span> <span class="text-green-600">work</span>, <span class="text-red-600">Peter</span> had had enough of <span class="text-green-600">it</span>.*
+    </div>
+    
+    <div v-click="10" class="col-span-2 centered-flex">
+    <ic-outline-arrow-circle-right class="text-4xl centered-arrow"/>
+    
+    *Although <span class="text-red-600">Peter</span> was very busy with <span class="text-red-600">Peter</span> <span class="text-green-600">work</span>, <span class="text-red-600">Peter</span> had had enough of <span class="text-green-600">work</span>.*
+    </div>
+  </div>
+</div>
 
 ---
 
 # The BoardgameGeek Weight
 
 <br />
-<div class="barContainer">
-  <span class="bar1 bar"></span>
-  <span class="bar2 bar"></span>
-  <span class="bar3 bar"></span>
-  <span class="bar4 bar"></span>
-  <span class="bar5 bar"></span>
+<div v-click>
+  <div class="barContainer">
+    <span class="bar1 bar"></span>
+    <span class="bar2 bar"></span>
+    <span class="bar3 bar"></span>
+    <span class="bar4 bar"></span>
+    <span class="bar5 bar"></span>
+  </div>
+
+  <span style="margin-left: 5%">0</span>
+  <span style="float: right; margin-right: 5%">5</span>
 </div>
 <br />
 
-<span style="margin-left: 5%">0</span>
-<span style="float: right; margin-right: 5%">5</span>
+<div v-click>
 
 - Amount of rules ✅
 - Gameplay length ✅
@@ -195,6 +219,8 @@ docs_ranked = cosine_similarity(query_vector, doc_vectors)
 
 ### *Source: https://boardgamegeek.com/wiki/page/Weight*
 
+</div>
+
 <style>
   .barContainer { width: 90%; margin-left: 5%; float: left; }
   .barContainer span { 
@@ -202,113 +228,126 @@ docs_ranked = cosine_similarity(query_vector, doc_vectors)
     float: left;
     min-height: 1em;
   }
-  .bar { width: 20% }
-  .bar1 { background: #66ff66 }
-  .bar2 { background: #b2ff66 }
-  .bar3 { background: #ffff66 }
-  .bar4 { background: #ffb266 }
-  .bar5 { background: #ff6666 }
+  .bar { width: 25% }
+  .bar1 { 
+    background: rgb(102,255,102);
+    background: linear-gradient(90deg, rgba(102,255,102,1) 0%, rgba(178,255,102,1) 100%); 
+  }
+  .bar2 { 
+    background: rgb(178,255,102);
+    background: linear-gradient(90deg, rgba(178,255,102,1) 0%, rgba(255,255,102,1) 100%); 
+  }
+  .bar3 { 
+    background: rgb(255,255,102);
+    background: linear-gradient(90deg, rgba(255,255,102,1) 0%, rgba(255,178,102,1) 100%);
+  }
+  .bar4 { 
+    background: rgb(255,178,102);
+    background: linear-gradient(90deg, rgba(255,178,102,1) 0%, rgba(255,102,102,1) 100%);
+  }
 </style>
 
 ---
-clicks: 3
+clicks: 13
 ---
 
 # Amount of Luck
 
 Main sources of luck:
 
-<div v-if="$slidev.nav.clicks === 1">
+<div v-if="$slidev.nav.clicks >= 0 && $slidev.nav.clicks <= 3">
 
-  - Shuffling a deck, or when *"random/randomly"* words are used
+Shuffling a deck, or when *"random/randomly"* words are used
 
-    ```python
-    # ---------- random ----------
-    random_matcher = Matcher(doc.vocab)
-    random_patterns_match = [
-        [{"LEMMA": { "IN": ["random", "randomly"]}}]
-    ]
-    random_matcher.add("random", random_patterns_match)
+```python {all|4|11|all}
+# ---------- random ----------
+random_matcher = Matcher(doc.vocab)
+random_patterns_match = [
+    [{"LEMMA": { "IN": ["random", "randomly"]}}]
+]
+random_matcher.add("random", random_patterns_match)
 
-    # ---------- shuffle ----------
-    shuffle_matcher = Matcher(doc.vocab)
-    shuffle_patterns_match = [
-        [{"LEMMA": "shuffle"}]
-    ]
-    shuffle_matcher.add("shuffle", shuffle_patterns_match)
-    ```
+# ---------- shuffle ----------
+shuffle_matcher = Matcher(doc.vocab)
+shuffle_patterns_match = [
+    [{"LEMMA": "shuffle"}]
+]
+shuffle_matcher.add("shuffle", shuffle_patterns_match)
+```
 </div>
 
-<div v-if="$slidev.nav.clicks === 2">
+<div v-if="$slidev.nav.clicks >= 4 && $slidev.nav.clicks <= 7">
 
-  - Drawing a card
-    ```python
-    g_matcher = DependencyMatcher(doc.vocab)    
-    drawing_patterns = [
-        [
-            {
-                "RIGHT_ID": "drawing",
-                "RIGHT_ATTRS": {"LEMMA": "draw", "POS": "VERB"}
-            },
-            {
-                "LEFT_ID": "drawing",
-                "REL_OP": ">",
-                "RIGHT_ID": "card",
-                "RIGHT_ATTRS": {
-                    "LEMMA": "card",
-                    "POS": "NOUN", 
-                    "DEP": { "IN": ['dobj', 'nsubjpass', 'compound'] }
-                }
+Drawing a card
+
+```python {||||all|6|13-15|all}
+g_matcher = DependencyMatcher(doc.vocab)    
+drawing_patterns = [
+    [
+        {
+            "RIGHT_ID": "drawing",
+            "RIGHT_ATTRS": {"LEMMA": "draw", "POS": "VERB"}
+        },
+        {
+            "LEFT_ID": "drawing",
+            "REL_OP": ">",
+            "RIGHT_ID": "card",
+            "RIGHT_ATTRS": {
+                "LEMMA": "card",
+                "POS": "NOUN", 
+                "DEP": { "IN": ['dobj', 'nsubjpass', 'compound'] }
             }
-        ]
+        }
     ]
-    ```
+]
+```
 </div>
 
-<div v-if="$slidev.nav.clicks === 3">
+<div v-if="$slidev.nav.clicks >= 8 && $slidev.nav.clicks <= 13">
 
-  - Rolling a die
-    ```python (all|2|1-6|9|all)
-    dice_matcher = DependencyMatcher(doc.vocab)    
-    dice_patterns = [
-        [
-            {
-                "RIGHT_ID": "rolling",
-                "RIGHT_ATTRS": {"LEMMA": { "IN": ["use", "throw", "roll"]}, "POS": "VERB"}
-            },
-            {
-                "LEFT_ID": "rolling",
-                "REL_OP": ">",
-                "RIGHT_ID": "dice_or_die",
-                "RIGHT_ATTRS": {
-                    "LEMMA": { "IN": ["die", "dice"]},
-                    "POS": "NOUN", 
-                    "DEP": { "IN": ['nsubj', 'dobj', 'nsubjpass', 'compound'] }
-                }
-            }
-        ],
-        [
-            {
-                "RIGHT_ID": "rolling",
-                "RIGHT_ATTRS": {"LEMMA": { "IN": ["use", "throw", "roll"]}, "POS": "VERB"}
-            },
-            {
-                "LEFT_ID": "rolling",
-                "REL_OP": ">",
-                "RIGHT_ID": "number",
-                "RIGHT_ATTRS": {
-                    "IS_DIGIT": True, 
-                    "DEP": { "IN": ['dobj'] }
-                }
-            }
-        ]
-    ]
-    dice_matcher.add("diceroll", dice_patterns)
-    ```
+  Rolling a die
+
+  ```python {||||||||all|6|13-15|22|29,30|all}
+  dice_matcher = DependencyMatcher(doc.vocab)    
+  dice_patterns = [
+      [
+          {
+              "RIGHT_ID": "rolling",
+              "RIGHT_ATTRS": {"LEMMA": { "IN": ["use", "throw", "roll"]}, "POS": "VERB"}
+          },
+          {
+              "LEFT_ID": "rolling",
+              "REL_OP": ">",
+              "RIGHT_ID": "dice_or_die",
+              "RIGHT_ATTRS": {
+                  "LEMMA": { "IN": ["die", "dice"]},
+                  "POS": "NOUN", 
+                  "DEP": { "IN": ['nsubj', 'dobj', 'nsubjpass', 'compound'] }
+              }
+          }
+      ],
+      [
+          {
+              "RIGHT_ID": "rolling",
+              "RIGHT_ATTRS": {"LEMMA": { "IN": ["use", "throw", "roll"]}, "POS": "VERB"}
+          },
+          {
+              "LEFT_ID": "rolling",
+              "REL_OP": ">",
+              "RIGHT_ID": "number",
+              "RIGHT_ATTRS": {
+                  "IS_DIGIT": True, 
+                  "DEP": { "IN": ['dobj'] }
+              }
+          }
+      ]
+  ]
+  dice_matcher.add("diceroll", dice_patterns)
+  ```
 </div>
 
 ---
-clicks: 4
+clicks: 5
 ---
 
 # Technical skill required (math, planning, reading)
@@ -322,12 +361,12 @@ clicks: 4
 </v-clicks>
 
 <br />
-<div v-click="3"> 
+<div v-click="4"> 
   
   **MTLD** (Measure of Textual Lexical Diversity)
 </div>
 
-<div v-click="4"> 
+<div v-click="5"> 
 
   - Mostly independent from text length
   - Highly sensitive
@@ -335,7 +374,7 @@ clicks: 4
 </div>
 
 ---
-clicks: 10
+clicks: 9
 ---
 
 # Amount of choices available
@@ -344,7 +383,7 @@ clicks: 10
 
 Modal verbs like *can/could/may/select/choose* or nouns like *choice/option*
 
-```python {0|1-6|8-13|15-20}
+```python {all|1-6|8-13|15-20|all}
 can_could_may_patterns = [
     [{
         "LEMMA": { "IN": ["can", "could", "may"]}, 
@@ -383,7 +422,7 @@ It is not always true...
 
 Subtract the tokens found for these exceptions from the initial ones, for example
 
-```python {|||||||1|2|all}
+```python {||||||5,6|14|22,23|all}
 # ❌ can not/only/never verb 
 {
     "RIGHT_ID": "can_could_may",
@@ -459,7 +498,7 @@ According to this definition, an entity can be:
 </v-clicks>
 
 ---
-clicks: 5
+clicks: 10
 ---
 
 # Entity Retrieval with `Spacy`
@@ -468,7 +507,7 @@ clicks: 5
 
 - Create a dictionary of filtered nouns
 
-```python {5|6|7|all}
+```python {all|5|6|7|all}
 def find_most_common_nouns(doc: spacy.tokens.Doc) -> Dict[str, List[spacy.tokens.Token]]:
     tokens_dict = defaultdict(list)
 
@@ -483,11 +522,11 @@ def find_most_common_nouns(doc: spacy.tokens.Doc) -> Dict[str, List[spacy.tokens
 
 </div>
 
-<div v-if="$slidev.nav.clicks === 5">
+<div v-if="$slidev.nav.clicks >= 5">
 
 - Keep only the nouns that satisfy the following conditions
 
-```python
+```python {|||||all|5|6|7,8|9-11|all}
 def _is_token_an_unigram(token_info: Tuple[str, List[spacy.tokens.Token]]) -> bool:
     token = token_info[0]
     occurrences = token_info[1]
@@ -520,9 +559,9 @@ def _is_token_an_unigram(token_info: Tuple[str, List[spacy.tokens.Token]]) -> bo
 
 # Actions Score
 
-**How many ways can we interact with an entity?**
+**How many ways can an entity affect the game?**
 
-```python {3,4|9|all}
+```python {all|3,4|9|all}
 def find_actions_count_for_unigrams(doc: spacy.tokens.Doc, 
                                     unigrams: Dict[str, List[spacy.tokens.Token]]) -> Dict[str, int]:
     return { unigram: len(set(token.head.lemma_ for token in unigrams[unigram] if token.head.pos_ == 'VERB'))
@@ -642,7 +681,7 @@ Where *complex* refers to the initial definition of complexity
 - **Best Model**: `SVR`
 - **MAE** ≈ `0.30`
 - **Learning Curve**: stable after a dataset of 150 boardgames
-- **KBest Features**: between 6 and 13, depending on the model. 7 for `SVR`
+- **K-Best Features**: between 6 and 13, depending on the model. 7 for `SVR`
 
 </v-clicks>
 
@@ -660,7 +699,7 @@ For `SVR`, on 5 trainings with different train-test splits, the chosen features 
 <v-click>
 <div>
 <fa-exclamation-triangle style="color: yellow"/> 
-The metrics computed specifically for the BGG Weight are not relevant (in `SVR`)
+The metrics computed specifically for the BGG Weight are not relevant (in SVR)
 </div>
 </v-click>
 
@@ -719,219 +758,3 @@ actions_score       0.036 +/- 0.006
     Integrate the rulebook with other resources and info
   </div> 
 </div>
-
-<style>
-  .centered-arrow {
-    min-width: 50%;
-    text-align: center;
-  }
-</style>
-
----
-class: px-20
----
-
-# Themes
-
-Slidev comes with powerful theming support. Themes can provide styles, layouts, components, or even configurations for tools. Switching between themes by just **one edit** in your frontmatter:
-
-<div grid="~ cols-2 gap-2" m="-t-2">
-
-```yaml
----
-theme: default
----
-```
-
-```yaml
----
-theme: seriph
----
-```
-
-<img border="rounded" src="https://github.com/slidevjs/themes/blob/main/screenshots/theme-default/01.png?raw=true">
-
-<img border="rounded" src="https://github.com/slidevjs/themes/blob/main/screenshots/theme-seriph/01.png?raw=true">
-
-</div>
-
-Read more about [How to use a theme](https://sli.dev/themes/use.html) and
-check out the [Awesome Themes Gallery](https://sli.dev/themes/gallery.html).
-
----
-preload: false
----
-
-# Animations
-
-Animations are powered by [@vueuse/motion](https://motion.vueuse.org/).
-
-```html
-<div
-  v-motion
-  :initial="{ x: -80 }"
-  :enter="{ x: 0 }">
-  Slidev
-</div>
-```
-
-<div class="w-60 relative mt-6">
-  <div class="relative w-40 h-40">
-    <img
-      v-motion
-      :initial="{ x: 800, y: -100, scale: 1.5, rotate: -50 }"
-      :enter="final"
-      class="absolute top-0 left-0 right-0 bottom-0"
-      src="https://sli.dev/logo-square.png"
-    />
-    <img
-      v-motion
-      :initial="{ y: 500, x: -100, scale: 2 }"
-      :enter="final"
-      class="absolute top-0 left-0 right-0 bottom-0"
-      src="https://sli.dev/logo-circle.png"
-    />
-    <img
-      v-motion
-      :initial="{ x: 600, y: 400, scale: 2, rotate: 100 }"
-      :enter="final"
-      class="absolute top-0 left-0 right-0 bottom-0"
-      src="https://sli.dev/logo-triangle.png"
-    />
-  </div>
-
-  <div
-    class="text-5xl absolute top-14 left-40 text-[#2B90B6] -z-1"
-    v-motion
-    :initial="{ x: -80, opacity: 0}"
-    :enter="{ x: 0, opacity: 1, transition: { delay: 2000, duration: 1000 } }">
-    Slidev
-  </div>
-</div>
-
-<!-- vue script setup scripts can be directly used in markdown, and will only affects current page -->
-<script setup lang="ts">
-const final = {
-  x: 0,
-  y: 0,
-  rotate: 0,
-  scale: 1,
-  transition: {
-    type: 'spring',
-    damping: 10,
-    stiffness: 20,
-    mass: 2
-  }
-}
-</script>
-
-<div
-  v-motion
-  :initial="{ x:35, y: 40, opacity: 0}"
-  :enter="{ y: 0, opacity: 1, transition: { delay: 3500 } }">
-
-[Learn More](https://sli.dev/guide/animations.html#motion)
-
-</div>
-
----
-
-# LaTeX
-
-LaTeX is supported out-of-box powered by [KaTeX](https://katex.org/).
-
-<br>
-
-Inline $\sqrt{3x-1}+(1+x)^2$
-
-Block
-$$
-\begin{array}{c}
-
-\nabla \times \vec{\mathbf{B}} -\, \frac1c\, \frac{\partial\vec{\mathbf{E}}}{\partial t} &
-= \frac{4\pi}{c}\vec{\mathbf{j}}    \nabla \cdot \vec{\mathbf{E}} & = 4 \pi \rho \\
-
-\nabla \times \vec{\mathbf{E}}\, +\, \frac1c\, \frac{\partial\vec{\mathbf{B}}}{\partial t} & = \vec{\mathbf{0}} \\
-
-\nabla \cdot \vec{\mathbf{B}} & = 0
-
-\end{array}
-$$
-
-<br>
-
-[Learn more](https://sli.dev/guide/syntax#latex)
-
----
-
-# Diagrams
-
-You can create diagrams / graphs from textual descriptions, directly in your Markdown.
-
-<div class="grid grid-cols-3 gap-10 pt-4 -mb-6">
-
-```mermaid {scale: 0.5}
-sequenceDiagram
-    Alice->John: Hello John, how are you?
-    Note over Alice,John: A typical interaction
-```
-
-```mermaid {theme: 'neutral', scale: 0.8}
-graph TD
-B[Text] --> C{Decision}
-C -->|One| D[Result 1]
-C -->|Two| E[Result 2]
-```
-
-```plantuml {scale: 0.7}
-@startuml
-
-package "Some Group" {
-  HTTP - [First Component]
-  [Another Component]
-}
-
-node "Other Groups" {
-  FTP - [Second Component]
-  [First Component] --> FTP
-}
-
-cloud {
-  [Example 1]
-}
-
-
-database "MySql" {
-  folder "This is my folder" {
-    [Folder 3]
-  }
-  frame "Foo" {
-    [Frame 4]
-  }
-}
-
-
-[Another Component] --> [Example 1]
-[Example 1] --> [Folder 3]
-[Folder 3] --> [Frame 4]
-
-@enduml
-```
-
-</div>
-
-[Learn More](https://sli.dev/guide/syntax.html#diagrams)
-
----
-src: ./pages/multiple-entries.md
-hide: false
----
-
----
-layout: center
-class: text-center
----
-
-# Learn More
-
-[Documentations](https://sli.dev) · [GitHub](https://github.com/slidevjs/slidev) · [Showcases](https://sli.dev/showcases.html)

@@ -13,6 +13,11 @@
     align-content: center;
 }
 
+.centered-arrow {
+    min-width: 50%;
+    text-align: center;
+}
+
 #slide-content {
     overflow: scroll;
 }
