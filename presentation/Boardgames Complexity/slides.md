@@ -10,12 +10,6 @@ class: 'text-center'
 highlighter: shiki
 # show line numbers in code blocks
 lineNumbers: false
-# some information about the slides, markdown enabled
-info: |
-  ## Slidev Starter Template
-  Presentation slides for developers.
-
-  Learn more at [Sli.dev](https://sli.dev)
 # persist drawings in exports and build
 drawings:
   persist: false
@@ -28,26 +22,26 @@ css: unocss
 <br />
 <br />
 
-Goal
-
-<br />
-
-Analyze a boardgame to predict its complexity, then compare it with the corresponding BoardgameGeek weight
+## How to predict the complexity of a boardgame starting from its rulebook and BoardgameGeek.com data
 
 ---
 
 # How Can We Define Complexity?
 
 <div class="grid grid-rows-1 grid-cols-3 centered-grid">
-  <p>
-    <b>Complexity</b> <br />
-    <em><q>Complexity arises when a player follows one base rule, and in doing so changes the way that another base rule affects the game state</q></em>
-  </p>
+
+  <div>
+
+  **Complexity**\
+  *Complexity arises when a player follows one base rule, and in doing so changes the way that another base rule affects the game state*
+  </div>
+
   <ep-circle-plus-filled class="text-4xl" />
-  <p>
-    <b>Depth</b> <br />
-    <em><q>The depth of a game is more of a heuristic based on how many deep decisions are in the design</q></em>
-  </p>
+  <div>
+
+  **Depth**\
+  *The depth of a game is more of a heuristic based on how many deep decisions are in the design*
+  </div>
 </div>
 
 <br />
@@ -66,12 +60,12 @@ Analyze a boardgame to predict its complexity, then compare it with the correspo
 
   | Field | Description | How |
   | ----- | ----------- | ---- |
-  | Id | The BGG Id of the boardgame | XMLAPI2 |
-  | Name | The boardgame name | XMLAPI2 |
-  | Averageweight | The average of the complexity scores given by the user | XMLAPI2 |
-  | Playingtime | The playing time | XMLAPI2 |
-  | Family | List of the boardgame's categories, like family game, strategy, etc | XMLAPI2 |
-  | Rulebook | The boardgame's rulebook | Internal APIs |
+  | **Id** | The BGG Id of the boardgame | XMLAPI2 |
+  | **Name** | The boardgame name | XMLAPI2 |
+  | **Averageweight** | The average of the complexity scores given by the user | XMLAPI2 |
+  | **Playingtime** | The playing time | XMLAPI2 |
+  | **Family** | List of the boardgame's categories, like family game, strategy, etc | XMLAPI2 |
+  | **Rulebook** | The boardgame's rulebook | Internal APIs |
 
   </div>
 </div>
@@ -79,32 +73,55 @@ Analyze a boardgame to predict its complexity, then compare it with the correspo
 ### *XMLAPI2: https://boardgamegeek.com/wiki/page/BGG_XML_API2*
 
 ---
+clicks: 8
+---
 
 # Rulebook Download
 
-How to automate the rulebooks' download? **No public APIs** and often **many documents to select from**
+How to automate the rulebooks' download? **No public APIs** and often **many documents to choose from**
+
+<div v-if="$slidev.clicks_in_range(0, 4)">
+
 - Internal APIs for authenticated users
 
-  ```python {all|2|6|all}
-  async def get_bgg_filelist(client, thing_id: int) -> List[BoardGameFileInfo]:
-      url = f"https://api.geekdo.com/api/files?ajax=1&nosession=1&objectid={thing_id}&objecttype=thing&pageid=1&showcount=25&sort=hot&languageid=2184"
-      async with client.get(url) as response:
-          content = await response.json()
-          files = content['files']
-          file_list = filter(lambda x: x is not None and x.extension == 'pdf', [BoardGameFileInfo.from_file_info(file) for file in files])
-          return file_list
-  ```
+```python {all|2|6|17|all}
+async def get_bgg_filelist(client, thing_id: int) -> List[BoardGameFileInfo]:
+    url = f"https://api.geekdo.com/api/files?ajax=1&nosession=1&objectid={thing_id}&objecttype=thing&pageid=1&showcount=25&sort=hot&languageid=2184"
+    async with client.get(url) as response:
+        content = await response.json()
+        files = content['files']
+        file_list = filter(lambda x: x is not None and x.extension == 'pdf', [BoardGameFileInfo.from_file_info(file) for file in files])
+        return file_list
+
+async def get_file_content(client, auth_token: str, file: BoardGameFileInfo) -> str:
+    url = f'https://api.geekdo.com/api/files/downloadurls?ids={file.id}' 
+    headers = { 'Authorization': f'GeekAuth {auth_token}' }
+    async with RetryingClientResponse(lambda: client.get(url, headers=headers)) as response:
+        content = await response.json()        
+        download_url = 'https://boardgamegeek.com' + content['downloadUrls'][0]['url']
+        async with RetryingClientResponse(lambda: client.get(download_url)) as pdf_response:
+            pdf_data = await pdf_response.read()
+            with PyMuPDF.open(stream=pdf_data, filetype="pdf") as doc:
+                # return parsed file
+```
+
+</div>
+
+<div v-if="$slidev.clicks_in_range(5, 8)">
+
 - Search engine based on Tf-Idf to choose the best document
 
-  ```python {all|2|4|all}
-  filelist = await get_bgg_filelist(client, thing_id)
-  doc_vectors = vectorizer.fit_transform(f'{x.name} {x.plain_description}' for x in filelist)
+```python {all|2|4|all}
+filelist = await get_bgg_filelist(client, thing_id)
+doc_vectors = vectorizer.fit_transform(f'{x.name} {x.plain_description}' for x in filelist)
 
-  query_vector = vectorizer.transform(["revised official rule rulebook update new"])
-  docs_ranked = cosine_similarity(query_vector, doc_vectors)
+query_vector = vectorizer.transform(["revised official rule rulebook update new"])
+docs_ranked = cosine_similarity(query_vector, doc_vectors)
 
-  # ... Take only the best doc
-  ```
+# ... Take only the best doc
+```
+
+</div>
 
 ---
 
@@ -536,28 +553,28 @@ Where *complex* refers to the initial definition of complexity
   <div class="bordercell">e4</div>
 
   <div class="bordercell">e1</div>
-  <OpaqueGridCell value="0" />
-  <OpaqueGridCell value="10" />
-  <OpaqueGridCell value="6" />
-  <OpaqueGridCell value="3" />
+  <OpaqueGridCell value=0 />
+  <OpaqueGridCell value=10 />
+  <OpaqueGridCell value=6 />
+  <OpaqueGridCell value=3 />
 
   <div class="bordercell">e2</div>
-  <OpaqueGridCell value="0" />
-  <OpaqueGridCell value="0" />
-  <OpaqueGridCell value="6" />
-  <OpaqueGridCell value="0" />
+  <OpaqueGridCell value=0 />
+  <OpaqueGridCell value=0 />
+  <OpaqueGridCell value=6 />
+  <OpaqueGridCell value=0 />
 
   <div class="bordercell">e3</div>
-  <OpaqueGridCell value="0" />
-  <OpaqueGridCell value="0" />
-  <OpaqueGridCell value="0" />
-  <OpaqueGridCell value="6" />
+  <OpaqueGridCell value=0 />
+  <OpaqueGridCell value=0 />
+  <OpaqueGridCell value=0 />
+  <OpaqueGridCell value=6 />
 
   <div class="bordercell">e4</div>
-  <OpaqueGridCell value="0" />
-  <OpaqueGridCell value="0" />
-  <OpaqueGridCell value="0" />
-  <OpaqueGridCell value="0" />
+  <OpaqueGridCell value=0 />
+  <OpaqueGridCell value=0 />
+  <OpaqueGridCell value=0 />
+  <OpaqueGridCell value=0 />
 
   </div>
 </v-click>
@@ -643,9 +660,72 @@ For `SVR`, on 5 trainings with different train-test splits, the chosen features 
 <v-click>
 <div>
 <fa-exclamation-triangle style="color: yellow"/> 
-The metrics computed specifically for the BGG Weight are not relevant 
+The metrics computed specifically for the BGG Weight are not relevant (in `SVR`)
 </div>
 </v-click>
+
+---
+
+# Features Weight
+
+With `SVR`, features do not have coefficients associated, but we can use the `permutation_importance` method to find the features that, when randomized, mostly affect the predictions
+
+<v-click>
+
+```
+playingtime         0.664 +/- 0.045
+rulebook_len        0.150 +/- 0.017
+strategygames       0.146 +/- 0.014
+entities_count      0.107 +/- 0.011
+entities_variance   0.095 +/- 0.010
+familygames         0.063 +/- 0.008
+actions_score       0.036 +/- 0.006
+```
+</v-click>
+
+---
+
+# Future Work
+
+<div class="grid grid-cols-3 centered-grid gap-y-3" style="justify-items: initial">
+
+  <div v-click>
+    <fa-exclamation-triangle style="color: red"/>
+    Rulebooks downloaded are not always correct
+  </div>
+
+  <div v-click class="col-span-2 centered-flex">
+    <material-symbols-arrow-right-alt-rounded class="centered-arrow"/>
+    Analyze multiple rulebooks of the same boardgame and decide which is the best, remove unnecessary paragraph while cleaning 
+  </div>
+
+  <div v-click>
+    <fa-exclamation-triangle style="color: red"/>
+    The entity search algorithm is "static"
+  </div>
+
+  <div v-click class="col-span-2 centered-flex">
+    <material-symbols-arrow-right-alt-rounded class="centered-arrow"/> 
+    Remove static thresholds, rank the entities and choose the top ones dynamically
+  </div>
+
+  <div v-click>
+    <fa-exclamation-triangle style="color: red"/>
+    Boardgame depth
+  </div>
+
+  <div v-click class="col-span-2 centered-flex">
+    <material-symbols-arrow-right-alt-rounded class="centered-arrow"/> 
+    Integrate the rulebook with other resources and info
+  </div> 
+</div>
+
+<style>
+  .centered-arrow {
+    min-width: 50%;
+    text-align: center;
+  }
+</style>
 
 ---
 class: px-20
