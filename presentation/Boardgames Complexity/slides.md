@@ -30,14 +30,14 @@ css: unocss
 
 <div class="grid grid-rows-1 grid-cols-3 centered-grid">
 
-  <div>
+  <div v-click="1">
 
   **Complexity**\
   *Complexity arises when a player follows one base rule, and in doing so changes the way that another base rule affects the game state*
   </div>
 
-  <ep-circle-plus-filled class="text-4xl" />
-  <div>
+  <ep-circle-plus-filled class="text-4xl" v-click="3"/>
+  <div v-click="2">
 
   **Depth**\
   *The depth of a game is more of a heuristic based on how many deep decisions are in the design*
@@ -305,45 +305,45 @@ drawing_patterns = [
 
 <div v-if="$slidev.nav.clicks >= 8 && $slidev.nav.clicks <= 13">
 
-  Rolling a die
+Rolling a die
 
-  ```python {||||||||all|6|13-15|22|29,30|all}
-  dice_matcher = DependencyMatcher(doc.vocab)    
-  dice_patterns = [
-      [
-          {
-              "RIGHT_ID": "rolling",
-              "RIGHT_ATTRS": {"LEMMA": { "IN": ["use", "throw", "roll"]}, "POS": "VERB"}
-          },
-          {
-              "LEFT_ID": "rolling",
-              "REL_OP": ">",
-              "RIGHT_ID": "dice_or_die",
-              "RIGHT_ATTRS": {
-                  "LEMMA": { "IN": ["die", "dice"]},
-                  "POS": "NOUN", 
-                  "DEP": { "IN": ['nsubj', 'dobj', 'nsubjpass', 'compound'] }
-              }
-          }
-      ],
-      [
-          {
-              "RIGHT_ID": "rolling",
-              "RIGHT_ATTRS": {"LEMMA": { "IN": ["use", "throw", "roll"]}, "POS": "VERB"}
-          },
-          {
-              "LEFT_ID": "rolling",
-              "REL_OP": ">",
-              "RIGHT_ID": "number",
-              "RIGHT_ATTRS": {
-                  "IS_DIGIT": True, 
-                  "DEP": { "IN": ['dobj'] }
-              }
-          }
-      ]
-  ]
-  dice_matcher.add("diceroll", dice_patterns)
-  ```
+```python {||||||||all|6|13-15|22|29,30|all}
+dice_matcher = DependencyMatcher(doc.vocab)    
+dice_patterns = [
+    [
+        {
+            "RIGHT_ID": "rolling",
+            "RIGHT_ATTRS": {"LEMMA": { "IN": ["use", "throw", "roll"]}, "POS": "VERB"}
+        },
+        {
+            "LEFT_ID": "rolling",
+            "REL_OP": ">",
+            "RIGHT_ID": "dice_or_die",
+            "RIGHT_ATTRS": {
+                "LEMMA": { "IN": ["die", "dice"]},
+                "POS": "NOUN", 
+                "DEP": { "IN": ['nsubj', 'dobj', 'nsubjpass', 'compound'] }
+            }
+        }
+    ],
+    [
+        {
+            "RIGHT_ID": "rolling",
+            "RIGHT_ATTRS": {"LEMMA": { "IN": ["use", "throw", "roll"]}, "POS": "VERB"}
+        },
+        {
+            "LEFT_ID": "rolling",
+            "REL_OP": ">",
+            "RIGHT_ID": "number",
+            "RIGHT_ATTRS": {
+                "IS_DIGIT": True, 
+                "DEP": { "IN": ['dobj'] }
+            }
+        }
+    ]
+]
+dice_matcher.add("diceroll", dice_patterns)
+```
 </div>
 
 ---
@@ -374,7 +374,7 @@ clicks: 5
 </div>
 
 ---
-clicks: 9
+clicks: 10
 ---
 
 # Amount of choices available
@@ -422,7 +422,7 @@ It is not always true...
 
 Subtract the tokens found for these exceptions from the initial ones, for example
 
-```python {||||||5,6|14|22,23|all}
+```python {||||||all|5,6|14|22,23|all}
 # ❌ can not/only/never verb 
 {
     "RIGHT_ID": "can_could_may",
@@ -503,7 +503,7 @@ clicks: 10
 
 # Entity Retrieval with `Spacy`
 
-<div v-if="$slidev.nav.clicks >= 0 && $slidev.nav.clicks <= 4">
+<div v-if="$slidev.nav.clicks <= 4">
 
 - Create a dictionary of filtered nouns
 
